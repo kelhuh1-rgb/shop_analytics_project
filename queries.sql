@@ -1,135 +1,152 @@
 
-SELECT * FROM products;
+SELECT * FROM product;
+
+SELECT name FROM categories;
+
+SELECT * FROM product
+ORDER BY price DESC
+LIMIT 1;
+
+SELECT * FROM product
+ORDER BY price ASC
+LIMIT 1;
+
+SELECT * FROM product
+WHERE price > 50000;
 
 
-SELECT category_name FROM categories;
+SELECT * FROM sales
+ORDER BY sale_date
+LIMIT 10;
 
+SELECT * FROM sales
+WHERE quantity > 3;
 
-SELECT * FROM products ORDER BY price DESC LIMIT 1;
+SELECT * FROM sales
+WHERE total_amount > 100000;
 
+SELECT * FROM product
+WHERE name ILIKE '%Книга%';
 
-SELECT * FROM products ORDER BY price ASC LIMIT 1;
+SELECT * FROM sales
+WHERE DATE(sale_date) = '2023-05-15';
 
+SELECT COUNT(*) AS total_categories
+FROM categories;
 
-SELECT * FROM products WHERE price > 50000;
+SELECT COUNT(*) AS total_products
+FROM product;
 
+SELECT AVG(price) AS average_price
+FROM product;
 
-SELECT * FROM sales ORDER BY sale_date DESC LIMIT 10;
+SELECT SUM(total_amount) AS total_revenue
+FROM sales;
 
+SELECT MAX(total_amount) AS max_receipt
+FROM sales;
 
-SELECT * FROM sales WHERE quantity > 3;
+SELECT MIN(total_amount) AS min_receipt
+FROM sales;
 
+SELECT SUM(quantity) AS total_quantity_sold
+FROM sales;
 
-SELECT * FROM sales WHERE total_amount > 100000;
+SELECT product_id,
+       SUM(quantity) AS total_sold
+FROM sales
+GROUP BY product_id;
 
+SELECT product_id,
+       SUM(total_amount) AS revenue
+FROM sales
+GROUP BY product_id;
 
-SELECT * FROM products WHERE product_name LIKE '%Книга%';
-
-
-SELECT * FROM sales WHERE sale_date = '2023-05-15';
-
-
-SELECT COUNT(*) AS category_count FROM categories;
-
-
-SELECT COUNT(*) AS product_count FROM products;
-
-
-SELECT AVG(price) AS avg_price FROM products;
-
-
-SELECT SUM(total_amount) AS total_revenue FROM sales;
-
-
-SELECT MAX(total_amount) AS max_check FROM sales;
-
-
-SELECT MIN(total_amount) AS min_check FROM sales;
-
-
-SELECT SUM(quantity) AS total_sold FROM sales;
-
-
-SELECT product_id, SUM(quantity) AS total_quantity 
-FROM sales 
-GROUP BY product_id 
-ORDER BY total_quantity DESC;
-
-
-SELECT product_id, SUM(total_amount) AS revenue 
-FROM sales 
-GROUP BY product_id 
-ORDER BY revenue DESC;
-
-
-SELECT product_id, SUM(total_amount) AS revenue 
-FROM sales 
-GROUP BY product_id 
+SELECT product_id
+FROM sales
+GROUP BY product_id
 HAVING SUM(total_amount) > 1000000;
 
+SELECT DATE(sale_date) AS sale_day,
+       COUNT(*) AS sales_count
+FROM sales
+GROUP BY DATE(sale_date)
+ORDER BY sale_day;
 
-SELECT sale_date, COUNT(*) AS sales_count 
-FROM sales 
-GROUP BY sale_date 
-ORDER BY sales_count DESC;
-
-
-SELECT sale_date, SUM(total_amount) AS daily_revenue 
-FROM sales 
-GROUP BY sale_date 
-ORDER BY daily_revenue DESC 
+SELECT DATE(sale_date) AS sale_day,
+       SUM(total_amount) AS revenue
+FROM sales
+GROUP BY DATE(sale_date)
+ORDER BY revenue DESC
 LIMIT 1;
 
+SELECT p.name AS product_name,
+       c.name AS category_name
+FROM product p
+JOIN categories c
+ON p.category_id = c.category_id;
 
-SELECT p.product_name, c.category_name 
-FROM products p
-JOIN categories c ON p.category_id = c.category_id;
-
-
-SELECT s.sale_date, p.product_name, s.quantity, s.total_amount 
+SELECT s.sale_id,
+       p.name AS product_name,
+       s.sale_date,
+       s.quantity,
+       s.total_amount
 FROM sales s
-JOIN products p ON s.product_id = p.product_id
-ORDER BY s.sale_date DESC;
+JOIN product p
+ON s.product_id = p.product_id;
 
-
-SELECT c.category_name, SUM(s.total_amount) AS revenue 
-FROM sales s
-JOIN products p ON s.product_id = p.product_id
-JOIN categories c ON p.category_id = c.category_id
-GROUP BY c.category_name
+SELECT c.name AS category_name,
+       SUM(s.total_amount) AS revenue
+FROM categories c
+JOIN product p
+ON c.category_id = p.category_id
+JOIN sales s
+ON p.product_id = s.product_id
+GROUP BY c.name
 ORDER BY revenue DESC;
 
-
-SELECT c.category_name, AVG(s.total_amount) AS avg_check 
-FROM sales s
-JOIN products p ON s.product_id = p.product_id
-JOIN categories c ON p.category_id = c.category_id
-GROUP BY c.category_name
-ORDER BY avg_check DESC 
+SELECT c.name AS category_name,
+       AVG(s.total_amount) AS average_receipt
+FROM categories c
+JOIN product p
+ON c.category_id = p.category_id
+JOIN sales s
+ON p.product_id = s.product_id
+GROUP BY c.name
+ORDER BY average_receipt DESC
 LIMIT 1;
 
-
-SELECT s.sale_date, p.product_name, c.category_name, s.quantity, s.total_amount
+SELECT s.sale_date,
+       p.name AS product_name,
+       c.name AS category_name,
+       s.total_amount
 FROM sales s
-JOIN products p ON s.product_id = p.product_id
-JOIN categories c ON p.category_id = c.category_id
-ORDER BY s.sale_date DESC;
+JOIN product p
+ON s.product_id = p.product_id
+JOIN categories c
+ON p.category_id = c.category_id;
 
+SELECT p.name
+FROM product p
+LEFT JOIN sales s
+ON p.product_id = s.product_id
+WHERE s.sale_id IS NULL;
 
-SELECT p.product_name 
-FROM products p
-LEFT JOIN sales s ON p.product_id = s.product_id
-WHERE s.product_id IS NULL;
+SELECT *
+FROM product
+WHERE price > (
+    SELECT AVG(price)
+    FROM product
+);
 
-
-SELECT * FROM products 
-WHERE price > (SELECT AVG(price) FROM products);
-
-
-SELECT p.product_name, c.category_name, SUM(s.total_amount) AS revenue 
+SELECT p.name AS product_name,
+       c.name AS category_name,
+       SUM(s.total_amount) AS revenue
 FROM sales s
-JOIN products p ON s.product_id = p.product_id
-JOIN categories c ON p.category_id = c.category_id
-GROUP BY p.product_id, p.product_name, c.category_name
-ORDER BY revenue DESC 
+JOIN product p
+ON s.product_id = p.product_id
+JOIN categories c
+ON p.category_id = c.category_id
+GROUP BY p.name, c.name
+ORDER BY revenue DESC
 LIMIT 3;
